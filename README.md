@@ -1,2 +1,2 @@
-# c--http-server
+# c++-http-server
 Event driven http server using epoll
