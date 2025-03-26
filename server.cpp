@@ -1,5 +1,3 @@
-// C++ program to show the example of server application in
-// socket programming
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
@@ -53,7 +51,7 @@ int CreateServer() {
     return serverSocket;
 }
 
-void ParseHttpRequest(int sock) {
+void ParseHttpRequest(int sock, Req& req) {
     char buf[4096];
     const char *method, *path; 
     int pret, minor_version;
@@ -66,7 +64,6 @@ void ParseHttpRequest(int sock) {
         while ((rret = read(sock, buf + buflen, sizeof(buf) - buflen)) == -1 && errno == EINTR);
         if (rret <= 0) {
             perror("Read error or client disconnected");
-            close(sock);
             return;
         }
         prevbuflen = buflen;
@@ -100,19 +97,20 @@ void ParseHttpRequest(int sock) {
         printf("%.*s: %.*s\n", (int)headers[i].name_len, headers[i].name,
                (int)headers[i].value_len, headers[i].value);
     }
+    req.method = method;
+    req.path = path;
+    req.headers = headers;
 
-    const char *response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-    write(sock, response, strlen(response));
+    //const char *response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+    //write(sock, response, strlen(response));
 
-    close(sock);
 }
 
 
 
 struct Req {
-    std::string method;
-    std::string path;
-    std::string contentType;
+    const char *method, *path; 
+    struct phr_header* headers;
     bool upgrade = false;
 };
 
